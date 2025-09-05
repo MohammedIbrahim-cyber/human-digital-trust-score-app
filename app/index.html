@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0c0f14"/>
+  <title>Human Digital Trust Score</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css"/>
+
+  <!-- jsPDF (UMD) from CDN — defer ensures it loads before our script (also we have a JS fallback) -->
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+    referrerpolicy="no-referrer"
+    defer>
+  </script>
+
+  <!-- App logic -->
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo">
+        <span class="shield-emoji" aria-hidden="true">🛡️</span>
+        <h1 class="title">Human Digital Trust Score</h1>
+      </div>
+      <p class="tagline">Clean, privacy-friendly assessment with actionable insights</p>
+    </header>
+
+    <!-- Progress -->
+    <div class="progressbar">
+      <div class="progress-step active" title="Basic Info">👤</div>
+      <div class="progress-step" title="Social">🌐</div>
+      <div class="progress-step" title="Security">🔐</div>
+      <div class="progress-step" title="Credibility">🏆</div>
+      <div class="progress-step" title="Results">📊</div>
+    </div>
+
+    <form id="trustForm" novalidate>
+      <!-- Step 1: Basic Info -->
+      <section class="form-step active">
+        <h2>👤 Basic Info</h2>
+        <label>
+          Name
+          <input type="text" id="name" required placeholder="Jane Doe"/>
+        </label>
+
+        <label>
+          Email
+          <input type="email" id="email" required placeholder="you@example.com" aria-describedby="emailStatus"/>
+        </label>
+        <small id="emailStatus" class="muted" aria-live="polite"></small>
+
+        <label>
+          Phone (8–15 digits)
+          <input type="text" id="phone" required placeholder="9876543210" inputmode="numeric" aria-describedby="phoneStatus"/>
+        </label>
+        <small id="phoneStatus" class="muted" aria-live="polite"></small>
+
+        <div class="buttons">
+          <button type="button" class="next-btn">Next</button>
+        </div>
+      </section>
+
+      <!-- Step 2: Social -->
+      <section class="form-step">
+        <h2>🌐 Social Media</h2>
+        <label>
+          LinkedIn URL (required)
+          <input type="url" id="linkedin" required placeholder="https://www.linkedin.com/in/username"/>
+        </label>
+        <label>
+          GitHub URL (optional)
+          <input type="url" id="github" placeholder="https://github.com/username"/>
+        </label>
+        <label>
+          Twitter / X (optional)
+          <input type="text" id="twitter" placeholder="@handle"/>
+        </label>
+        <div class="buttons">
+          <button type="button" class="prev-btn">Back</button>
+          <button type="button" class="next-btn">Next</button>
+        </div>
+      </section>
+
+      <!-- Step 3: Security -->
+      <section class="form-step">
+        <h2>🔐 Security</h2>
+        <label>
+          Password (test only)
+          <input type="password" id="password" placeholder="(not your real password)" aria-describedby="passwordStatus"/>
+        </label>
+        <div class="inline">
+          <button type="button" id="checkPasswordBtn">Check Breach</button>
+          <small id="passwordStatus" class="muted" aria-live="polite"></small>
+        </div>
+
+        <label class="checkbox">
+          <input type="checkbox" id="mfa"/>
+          Enable MFA / 2FA
+        </label>
+
+        <div class="buttons">
+          <button type="button" class="prev-btn">Back</button>
+          <button type="button" class="next-btn">Next</button>
+        </div>
+      </section>
+
+      <!-- Step 4: Credibility -->
+      <section class="form-step">
+        <h2>🏆 Professional Credibility</h2>
+        <label>
+          Job Title (required)
+          <input type="text" id="jobtitle" required placeholder="Software Engineer"/>
+        </label>
+        <label>
+          Company / Portfolio (optional)
+          <input type="text" id="company" placeholder="Acme Corp / yoursite.com"/>
+        </label>
+
+        <div class="buttons">
+          <button type="button" class="prev-btn">Back</button>
+          <button type="button" id="showResultsBtn" class="primary">Show Results</button>
+        </div>
+      </section>
+
+      <!-- Step 5: Results -->
+      <section class="form-step">
+        <h2>📊 Results</h2>
+
+        <!-- Analyzing -->
+        <div id="loadingScreen" class="loading-screen">
+          <div class="spinner"></div>
+          <p class="muted">Analyzing your trust score…</p>
+        </div>
+
+        <!-- Results -->
+        <div id="resultsContent" class="hidden">
+          <div class="gauge-wrap">
+            <canvas id="gaugeCanvas" width="320" height="180" aria-label="Trust score gauge"></canvas>
+            <div id="gaugeScore" class="gauge-score">0/100</div>
+          </div>
+          <p id="riskLabel" class="risk-label">Risk: —</p>
+
+          <div id="insights" class="card"></div>
+          <div id="recommendations" class="card"></div>
+
+          <div id="comparison" class="card">
+            <h3>Comparison</h3>
+            <div class="bars">
+              <div class="bar">
+                <span>Your score</span>
+                <div class="bar-track">
+                  <div id="yourBar" class="bar-fill"></div>
+                </div>
+                <span id="yourBarVal" class="bar-val">0</span>
+              </div>
+              <div class="bar">
+                <span>Average user</span>
+                <div class="bar-track">
+                  <div id="avgBar" class="bar-fill avg"></div>
+                </div>
+                <span id="avgBarVal" class="bar-val">65</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="buttons">
+            <button type="button" id="downloadPdfBtn" disabled>Download PDF Report</button>
+            <button type="button" id="copyLinkBtn">Copy Share Link</button>
+          </div>
+          <p class="privacy">✅ Your data never leaves your browser</p>
+        </div>
+
+        <div class="buttons">
+          <button type="button" class="prev-btn">Back</button>
+        </div>
+      </section>
+    </form>
+  </div>
+</body>
+</html>
